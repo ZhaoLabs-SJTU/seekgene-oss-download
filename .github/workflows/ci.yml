@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate SKILL.md frontmatter
+        run: |
+          python3 - <<'PY'
+          import sys, pathlib
+          p = pathlib.Path("SKILL.md")
+          if not p.exists():
+              print("::error::SKILL.md not found")
+              sys.exit(1)
+          text = p.read_text(encoding="utf-8")
+          if not text.startswith("---"):
+              print("::error::SKILL.md missing YAML frontmatter")
+              sys.exit(1)
+          end = text.find("\n---", 3)
+          if end == -1:
+              print("::error::SKILL.md frontmatter not closed")
+              sys.exit(1)
+          fm = text[3:end]
+          for key in ("name", "description"):
+              if f"{key}:" not in fm:
+                  print(f"::error::SKILL.md frontmatter missing '{key}'")
+                  sys.exit(1)
+          print("SKILL.md frontmatter OK")
+          PY
+
+      - name: Compile Python scripts
+        run: |
+          found=0
+          for f in $(find . -name '*.py' -not -path './.git/*'); do
+            python3 -m py_compile "$f" || exit 1
+            found=1
+          done
+          if [ "$found" = "0" ]; then echo "No Python files found (skipped)"; fi
+          echo "Python syntax check OK"

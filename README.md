@@ -5,6 +5,7 @@
 ![python](https://img.shields.io/badge/python-3.8%2B-blue?style=for-the-badge)
 ![platform](https://img.shields.io/badge/platform-Linux%20%2F%20macOS-orange?style=for-the-badge)
 ![license](https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge)
+[![CI](https://github.com/ZhaoLabs-SJTU/seekgene-oss-download/actions/workflows/ci.yml/badge.svg)](https://github.com/ZhaoLabs-SJTU/seekgene-oss-download/actions/workflows/ci.yml)
 
 > 本仓库为通用工具 + 经验沉淀，不含任何真实凭据、样本编号或个人信息。
 
