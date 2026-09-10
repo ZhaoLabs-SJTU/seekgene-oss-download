@@ -3,7 +3,8 @@
 """生成 seekgene-oss-download 小白文档三件套（脱敏版）。"""
 import os
 
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "小白文档")
+# 输出到仓库根目录的「小白文档/」（脚本位于 scripts/ 下，故取上一级）
+OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "小白文档")
 os.makedirs(OUT, exist_ok=True)
 
 # ---------- docx ----------
