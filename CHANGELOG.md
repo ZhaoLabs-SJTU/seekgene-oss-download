@@ -1,5 +1,13 @@
 # CHANGELOG — seekgene-oss-download
 
+## v1.2.0 — 2026-09-10
+
+- 沉淀二次校验实战经验，完善「完整性校验」章节：
+  - 明确 **MD5 校验需后台运行**：读 178 GB 约 5–10 分钟，用 `nohup ... > verify_check.log 2>&1 &` + `tail` 轮询，避免前台阻塞。
+  - 记录 **md5.txt 格式**：每行 `<md5>  <相对路径>`，行数 = 数据文件数（本案例 42 行）。
+  - 记录 **verify 输出三态 + 汇总**：`OK / MISSING / MISMATCH` → `VERIFY_RESULT: X/Y OK` → `ALL_MD5_VERIFIED_OK`（有异常则 `FAILED N files` 且 exit 1）。
+- 新增「参考脚本」路径说明：实战脚本在 `~/seekgene_dl/` 根目录而非 `scripts/` 子目录，曾因误用 `scripts/verify.py` 失败，需统一路径约定。
+
 ## v1.1.0 — 2026-09-10
 
 - 补齐标准板块，对齐同组织其它 skill 仓库的排版布局：

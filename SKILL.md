@@ -93,17 +93,39 @@ python3 scripts/progress.py
 
 ## 完整性校验（金标准）
 
+> ⏱️ **校验要读取全部数据计算 MD5**，178 GB 量级约耗时 **5–10 分钟**。务必后台运行 + 日志轮询，不要前台阻塞终端。
+
 ```bash
-python3 scripts/verify.py
-# 全部通过输出 ALL_MD5_VERIFIED_OK
+# 后台运行，日志落盘
+nohup python3 -u verify.py > verify_check.log 2>&1 &
+# 轮询结果
+tail -20 verify_check.log
 ```
 
+**md5.txt 格式**（每行 `<md5>  <相对路径>`，行数 = 数据文件数，本案例 42 行）：
+
 ```
-下载完成后校验：
+b0f9a381a226b2ebcaf2fe55c24faf5a  data/bam/25120408_WRQ_AF/WRQ_AF_SortedByCoordinate_withTag.bam.bai
+7857d33873688d881965c80932cc22c1  data/bam/25120408_WRQ_AF/WRQ_AF_SortedByCoordinate_withTag.bam
+...
+```
+
+**输出三态 + 汇总**：
+
+```
+OK        data/bam/.../xxx.bam                                   ← MD5 匹配
+MISSING   data/rds/.../xxx.rds                                   ← 本地文件缺失
+MISMATCH  data/loom/.../xxx.loom (want .., got ..)              ← MD5 不匹配，需重下
+...
+VERIFY_RESULT: 42/42 OK                                          ← 汇总
+ALL_MD5_VERIFIED_OK                                              ← 全部通过（金标准）
+# 若有不匹配则输出 FAILED N files，脚本 exit 1
+```
+
+**校验三要素**：
 1. 文件数：磁盘文件数 == 邮件/清单描述的文件数
 2. 类别齐全：bam / loom / matrix / raw_matrix / rds 每类样本数一致
 3. 内容一致性：逐文件 MD5 与 md5.txt 比对，必须 100% 匹配
-```
 
 ⚠️ **大小一致不算数**——断点续传中断、网络抖动都可能产生「大小对但内容坏」的文件，必须用 md5.txt 做金标准校验。
 
@@ -141,11 +163,14 @@ oss2 未安装
 | 列清单 | `python3 scripts/list_oss.py > list_objects.txt` |
 | 批量下载 | `nohup python3 -u scripts/download.py > download.log 2>&1 &` |
 | 看进度 | `python3 scripts/progress.py` |
-| MD5 校验 | `python3 scripts/verify.py`（`ALL_MD5_VERIFIED_OK` = 通过） |
+| MD5 校验（后台） | `nohup python3 -u verify.py > verify_check.log 2>&1 &` 后 `tail -20 verify_check.log`（`ALL_MD5_VERIFIED_OK` = 通过） |
+| md5.txt 格式 | 每行 `<md5>  <相对路径>`，行数 = 数据文件数 |
 | 凭据注入 | 环境变量 `OSS_ACCESS_KEY_ID/SECRET/ENDPOINT/BUCKET/PREFIX` |
 | 完成标志 | 下载 `ALL_FINISHED`，校验 `ALL_MD5_VERIFIED_OK` |
 
 ## 参考脚本
+
+> 📁 **脚本位置说明**：本次实战中脚本直接放在工作目录根（`~/seekgene_dl/`），并非 `scripts/` 子目录；本仓库为整洁起见放在 `scripts/` 下。**使用时务必确认脚本实际路径**——实战中曾因误用 `scripts/verify.py`（不存在）导致校验失败退出。约定：要么统一放根目录，要么统一放 `scripts/`，让命令路径与实际位置一致。
 
 | 脚本 | 用途 |
 |------|------|

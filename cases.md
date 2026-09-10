@@ -41,4 +41,12 @@ ALL_MD5_VERIFIED_OK
 2. 设置环境变量（AK/SK/Endpoint/Bucket/Prefix/LOCAL_ROOT）。
 3. `list_oss.py > list_objects.txt` → `nohup python3 -u download.py > download.log 2>&1 &`。
 4. 定时 `progress.py` 看进度，直到 `ALL_FINISHED`。
-5. `verify.py` 做 MD5，确认 `ALL_MD5_VERIFIED_OK`。
+5. `verify.py` 后台做 MD5：`nohup python3 -u verify.py > verify_check.log 2>&1 &`，再 `tail -20 verify_check.log` 看 `ALL_MD5_VERIFIED_OK`。
+
+### 踩坑记录（务必注意）
+
+| 坑 | 现象 | 解决 |
+|---|---|---|
+| **脚本路径写错** | 误用 `scripts/verify.py`（实际脚本在 `~/seekgene_dl/` 根目录）→ 校验直接失败退出 | 先 `ls` 确认脚本实际位置，命令路径与之对齐 |
+| **前台跑校验阻塞终端** | 读 178 GB 计算 MD5 需 5–10 分钟，前台会长时间无输出 | 用 `nohup ... &` 后台跑 + 重定向日志 + `tail` 轮询 |
+| **md5.txt 有 42 行而非 87** | 只有 42 个「数据文件」有 MD5（bam/bai/loom/matrix/raw_matrix/rds），辅助文件（ReadMe.pdf 等）不在其中 | 校验对象以 md5.txt 为准，勿与 list_objects 的 87 对象混淆 |
